@@ -3,6 +3,9 @@ package com.codelab.basics
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import com.codelab.basics.ui.theme.BasicsCodelabTheme
 
@@ -48,8 +52,6 @@ fun OnboardingScreen(onContinueClicked: () -> Unit) {
 
 @Composable
 private fun MyApp(names: List<String> = listOf("World", "Compose")) {
-    // remember는 컴포저블이 컴포지션에 유지되는 동안에만 작동. (기기 회전, 화면 모드 변경, 구성 변경, 프로세스 중단 시 등 상태가 손실)
-    // 대신 rememberSaveable을 사용.
     var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
     if (shouldShowOnboarding) {
@@ -61,19 +63,30 @@ private fun MyApp(names: List<String> = listOf("World", "Compose")) {
 }
 
 @Composable
-private fun Greetings(names: List<String> = List(1000) { "$it" }){
-    LazyColumn(modifier = Modifier.padding(vertical = 4.dp)){
-        items(items = names){
-            name -> Greeting(name = name)
+private fun Greetings(names: List<String> = List(1000) { "$it" }) {
+    LazyColumn(modifier = Modifier.padding(vertical = 4.dp)) {
+        items(items = names) { name ->
+            Greeting(name = name)
         }
     }
 }
 
 
 @Composable
-fun Greeting(name: String) {
+private fun Greeting(name: String) {
     val expanded = remember { mutableStateOf(false) }
-    val extraPaddingValues = if (expanded.value) 48.dp else 0.dp
+
+    // 항목이 펼쳐있는 상태가 유지 되어야 한다면 rememberSaveable 를 사용할 수 있다
+
+    // 애니메이션 맞춤설정! animationSpec
+    val extraPaddingValues by animateDpAsState(
+        targetValue = if (expanded.value) 48.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
+
     Surface(
         color = MaterialTheme.colors.primary,
         modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
@@ -86,7 +99,7 @@ fun Greeting(name: String) {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(bottom = extraPaddingValues)
+                    .padding(bottom = extraPaddingValues.coerceAtLeast(0.dp))
             ) {
                 Text(text = "Hello, ")
                 Text(text = name)
