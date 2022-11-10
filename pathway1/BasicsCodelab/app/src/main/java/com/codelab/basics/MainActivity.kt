@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,8 +48,9 @@ fun OnboardingScreen(onContinueClicked: () -> Unit) {
 
 @Composable
 private fun MyApp(names: List<String> = listOf("World", "Compose")) {
-
-    var shouldShowOnboarding by remember { mutableStateOf(true) }
+    // remember는 컴포저블이 컴포지션에 유지되는 동안에만 작동. (기기 회전, 화면 모드 변경, 구성 변경, 프로세스 중단 시 등 상태가 손실)
+    // 대신 rememberSaveable을 사용.
+    var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
     if (shouldShowOnboarding) {
         OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
