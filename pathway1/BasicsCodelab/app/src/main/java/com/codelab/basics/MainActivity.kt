@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,13 +25,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// 호이스팅이란 들어 올린다, 끌어 올린다 라는 의미.
-// 상태를 호이스팅할 수 있게 하면 상태가 중복되지 않고 버그가 발생하는 것을 방지, 컴포저블 재사용, 쉽게 테스트 가능.
-// 호이스팅 하면 안될 때 : 컴포저블의 상위 요소에서 제어할 필요가 없는 상태
 @Composable
 fun OnboardingScreen(onContinueClicked: () -> Unit) {
-    // TODO: 이 상태는 호이스팅 되어야 한다!
-
     Surface(color = MaterialTheme.colors.background) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -54,25 +51,22 @@ private fun MyApp(names: List<String> = listOf("World", "Compose")) {
     var shouldShowOnboarding by remember { mutableStateOf(true) }
 
     if (shouldShowOnboarding) {
-        // 상태가 아닌 함수를 전달하는 방식으로 컴포저블의 재사용 가능성을 높이고
-        // 다른 컴포저블이 상태를 변경하지 않도록 보호한다.
-
         OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
     } else {
-        Surface(color = MaterialTheme.colors.background) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(4f)
-                    .padding(vertical = 4.dp)
-            ) {
-                for (name in names) {
-                    Greeting(name = name)
-                }
-            }
-        }
+        Greetings()
     }
 
 }
+
+@Composable
+private fun Greetings(names: List<String> = List(1000) { "$it" }){
+    LazyColumn(modifier = Modifier.padding(vertical = 4.dp)){
+        items(items = names){
+            name -> Greeting(name = name)
+        }
+    }
+}
+
 
 @Composable
 fun Greeting(name: String) {
